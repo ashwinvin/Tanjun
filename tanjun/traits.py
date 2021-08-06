@@ -745,11 +745,6 @@ class ExecutableCommand(abc.ABC, typing.Generic[ContextT]):
 
     @property
     @abc.abstractmethod
-    def callback(self) -> CommandCallbackSig:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
     def checks(self) -> collections.Collection[CheckSig]:
         raise NotImplementedError
 
@@ -805,6 +800,11 @@ class ExecutableCommand(abc.ABC, typing.Generic[ContextT]):
 
 class SlashCommand(ExecutableCommand[SlashContext], abc.ABC):
     __slots__ = ()
+
+    @property
+    @abc.abstractmethod
+    def callback(self) -> CommandCallbackSig:
+        raise NotImplementedError
 
     @property
     @abc.abstractmethod
@@ -879,6 +879,11 @@ class SlashCommandGroup(SlashCommand, abc.ABC):
 
 class MessageCommand(ExecutableCommand[MessageContext], abc.ABC):
     __slots__ = ()
+
+    @property
+    @abc.abstractmethod
+    def callback(self) -> CommandCallbackSig:
+        raise NotImplementedError
 
     @property
     @abc.abstractmethod
