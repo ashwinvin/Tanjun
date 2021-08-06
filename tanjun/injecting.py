@@ -222,21 +222,24 @@ class InjectorClient:
         return Getter(get, name, injecting=True)
 
     def _make_type_getter(self, type_: type[_T], name: str, /) -> Getter[_T]:
-        for match, function in _TYPE_SPECIAL_CASES.items():
-            if inspect.isclass(match) and issubclass(type_, match):
+        if inspect.isclass(type_ and issubclass(type_, InjectorClient)):
+            return Getter(lambda _: typing.cast(_T, self._type_dependencies.get(type_, self)), name, injecting=False)
 
-                def get_special_cased(ctx: tanjun_traits.Context) -> _T:
-                    if (result := self._type_dependencies.get(type_, ...)) is not ...:
-                        return typing.cast(_T, result)
-
-                    if (result := function(ctx, self)) is not UNDEFINED:
-                        return typing.cast(_T, result)
-
-                    raise errors.MissingDependencyError(
-                        f"Couldn't resolve injected type {type_} to actual value"
-                    ) from None
-
-                return Getter(get_special_cased, name, injecting=False)
+        # for match, function in _TYPE_SPECIAL_CASES.items():
+        #     if inspect.isclass(match) and issubclass(type_, match):
+        #
+        #         def get_special_cased(ctx: tanjun_traits.Context) -> _T:
+        #             if (result := self._type_dependencies.get(type_, ...)) is not ...:
+        #                 return typing.cast(_T, result)
+        #
+        #             if (result := function(ctx, self)) is not UNDEFINED:
+        #                 return typing.cast(_T, result)
+        #
+        #             raise errors.MissingDependencyError(
+        #                 f"Couldn't resolve injected type {type_} to actual value"
+        #             ) from None
+        #
+        #         return Getter(get_special_cased, name, injecting=False)
 
         def get_injectable(_: tanjun_traits.Context) -> InjectableValue[_T]:
             try:
@@ -281,7 +284,6 @@ _TYPE_SPECIAL_CASES: dict[
     tanjun_traits.Client: lambda ctx, _: ctx.client,
     tanjun_traits.Component: lambda ctx, _: ctx.component or UNDEFINED,
     tanjun_traits.Context: lambda ctx, _: ctx,
-    InjectorClient: lambda _, cli: cli,
     hikari.api.Cache: lambda ctx, _: ctx.cache or UNDEFINED,
     hikari.api.RESTClient: lambda ctx, _: ctx.rest,
     hikari_traits.ShardAware: lambda ctx, _: ctx.shards or UNDEFINED,
